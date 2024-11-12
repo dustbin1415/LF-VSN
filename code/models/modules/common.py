@@ -44,15 +44,8 @@ def iwt_init(x):
     x3 = x[:, out_channel * 2:out_channel * 3, :, :] / 2
     x4 = x[:, out_channel * 3:out_channel * 4, :, :] / 2
 
-    """ CHANGE """
-    import options.options as option
-    opt = option.parse()
-    if opt.get('device') == 'cuda':
-        h = torch.zeros([out_batch, out_channel, out_height, out_width]).float().cuda()
-    elif opt.get('device') == 'mps':
-        device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-        h = torch.zeros([out_batch, out_channel, out_height, out_width]).float().to(device)
-
+    h = torch.zeros([out_batch, out_channel, out_height, out_width]).float().cuda()
+    
     h[:, :, 0::2, 0::2] = x1 - x2 - x3 + x4
     h[:, :, 1::2, 0::2] = x1 - x2 + x3 - x4
     h[:, :, 0::2, 1::2] = x1 + x2 - x3 - x4
@@ -83,3 +76,16 @@ class IWT(nn.Module):
 
     def forward(self, x):
         return iwt_init(x)
+
+def round_diff(x):
+    sign = torch.ones_like(x)
+    sign[torch.floor(x) % 2 == 0] = -1
+    y = sign * torch.cos(x * torch.pi) / 2
+    out = torch.round(x) + y - y.detach()
+    return out
+
+def GAF_round(img):
+    img = img * 255
+    img = round_diff(img)
+    img = img / 255
+    return img

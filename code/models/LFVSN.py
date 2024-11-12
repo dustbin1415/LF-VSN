@@ -10,7 +10,7 @@ import models.lr_scheduler as lr_scheduler
 from .base_model import BaseModel
 from models.modules.loss import ReconstructionLoss
 from models.modules.Quantization import Quantization
-from .modules.common import DWT,IWT
+from .modules.common import DWT,IWT,GAF_round
 
 logger = logging.getLogger('base')
 dwt=DWT()
@@ -38,14 +38,9 @@ class Model_VSN(BaseModel):
         self.idxx = 0
 
         self.netG = networks.define_G_v2(opt).to(self.device)
-        """ CHANGE """
-        from options import options
-        opts = options.parse()
+        
         if opt['dist']:
-            if opts.get('device') == 'cuda':
-                self.netG = DistributedDataParallel(self.netG, device_ids=[torch.cuda.current_device()])
-            elif opts.get('device') == 'mps':
-                self.netG = DistributedDataParallel(self.netG, device_ids=[torch.device('mps')])
+            self.netG = DistributedDataParallel(self.netG, device_ids=[torch.cuda.current_device()])
         else:
             self.netG = DataParallel(self.netG)
         # print network
@@ -105,20 +100,10 @@ class Model_VSN(BaseModel):
         h_t = []
         c_t = []
 
-        """ CHANGE """
-        from options import options
-        opts = options.parse()
-        if opts.get('device') == 'cuda':
-            for _ in range(self.opt_net['block_num_rbm']):
-                h_t.append(torch.zeros([b, c, h, w]).cuda())
-                c_t.append(torch.zeros([b, c, h, w]).cuda())
-            memory = torch.zeros([b, c, h, w]).cuda()
-        elif opts.get('device') == 'mps':
-            device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-            for _ in range(self.opt_net['block_num_rbm']):
-                h_t.append(torch.zeros([b, c, h, w]).to(device))
-                c_t.append(torch.zeros([b, c, h, w]).to(device))
-            memory = torch.zeros([b, c, h, w]).to(device)
+        for _ in range(self.opt_net['block_num_rbm']):
+            h_t.append(torch.zeros([b, c, h, w]).cuda())
+            c_t.append(torch.zeros([b, c, h, w]).cuda())
+        memory = torch.zeros([b, c, h, w]).cuda()
 
         return h_t, c_t, memory
 
@@ -177,6 +162,7 @@ class Model_VSN(BaseModel):
         self.secret = self.ref_L[:, :, center - intval:center + intval + 1]
         self.secret = [dwt(self.secret[:,i].reshape(b, -1, h, w)) for i in range(n)]
         self.output, out_h = self.netG(x=dwt(self.host.reshape(b, -1, h, w)), x_h=self.secret)
+        self.output = GAF_round(self.output) #add GAF from PRIS
         self.output = iwt(self.output)
 
         Gt_ref = self.real_H[:, center - intval:center + intval + 1].detach()

@@ -140,17 +140,10 @@ class PredictiveModuleMIMO(nn.Module):
         return res
 
 def gauss_noise(shape):
-    """CHANGE"""
-    opt = option.parse()
-    if opt.get('device') == 'cuda':
-        noise = torch.zeros(shape).cuda()
-        for i in range(noise.shape[0]):
-            noise[i] = torch.randn(noise[i].shape).cuda()
-    elif opt.get('device') == 'mps':
-        device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-        noise = torch.zeros(shape).to(device)
-        for i in range(noise.shape[0]):
-            noise[i] = torch.randn(noise[i].shape).to(device)
+    noise = torch.zeros(shape).cuda()
+    for i in range(noise.shape[0]):
+        noise[i] = torch.randn(noise[i].shape).cuda()
+    
     return noise
 
 def gauss_noise_mul(shape):

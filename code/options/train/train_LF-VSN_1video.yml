@@ -19,13 +19,12 @@ datasets:
     random_reverse: false
     border_mode: false
 
-    data_path: vimeo90k/sequences 
-    #data_path: /Users/mfyx/alzy/test/LF-VSN/code/vimeo90k/sequences
-    txt_path: vimeo90k/sep_trainlist.txt 
-    #txt_path: /Users/mfyx/alzy/test/LF-VSN/code/vimeo90k/sep_trainlist.txt
-
-    dataroot_LQ:  vimeo90k/vimeo90k_train_LR7frames.lmdb
-    #dataroot_LQ:  /Users/mfyx/alzy/test/LF-VSN/code/vimeo90k/vimeo90k_train_LR7frames.lmdb
+    #data_path: vimeo90k/sequences 
+    data_path: /share_1/dataset/vimeo90k/sequences 
+    #txt_path: vimeo90k/sep_trainlist.txt 
+    txt_path: /share_1/dataset/vimeo90k/sep_trainlist_10.txt 
+    #dataroot_LQ: ~/vimeo90k/vimeo90k_train_LR7frames.lmdb
+    dataroot_LQ: /share_1/dataset/vimeo90k/vimeo90k_train_LR7frames.lmdb
 
     cache_keys: Vimeo90K_train_keys.pkl
     num_video: 1
@@ -45,10 +44,10 @@ datasets:
     name: Vid4
     mode: test
 
-    data_path: vimeo90k/sequences 
-    #data_path: /Users/mfyx/alzy/test/LF-VSN/code/vimeo90k/sequences 
-    txt_path: vimeo90k/sep_testlist.txt
-    #txt_path: /Users/mfyx/alzy/test/LF-VSN/code/vimeo90k/sep_testlist.txt
+    #data_path: vimeo90k/sequences 
+    data_path: /share_1/dataset/vimeo90k/sequences 
+    #txt_path: vimeo90k/sep_testlist.txt
+    txt_path: /share_1/dataset/vimeo90k/sep_testlist_10.txt
 
     N_frames: 1
     padding: 'new_info'
